@@ -44,7 +44,7 @@ paral
 }
   \item{seed_rank}{A seed that is used to initialize the permutations.
 }
-  \item{paral}{Either TRUE or FALSE. It indicates whether parallel computation should be employed (default is FALSE). If paral=TRUE, a cluster must be initialized with "parallel" and "doParallel" libraries.
+  \item{paral}{Either TRUE or FALSE. It indicates whether parallel computation should be employed (default is FALSE). If paral=TRUE, a cluster must be initialized (e.g. via "doSNOW" library).
 }
 }
 \details{
@@ -100,12 +100,11 @@ ALPERC(n_add=5,
        paral=FALSE)
 
 ##run the function with parallel computation
-library(parallel)
-library(doParallel)
+library(doSNOW)
 
 ##initialize cluster
-cl <- makePSOCKcluster(4)
-registerDoParallel(cl)
+cl <- makeCluster(4)
+registerDoSNOW(cl)
 
 ALPERC(n_add=5,
        D_cand=D_cand,

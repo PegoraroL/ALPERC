@@ -21,6 +21,8 @@ pair_comp<-function(dati,B=2000,alpha.ranking=0.05,seed=125,st="dm", paral=FALSE
   ndependent <- ncol(dati) - 1
 
   if(paral==FALSE){
+    # Initialize progress bar
+    progbar <- txtProgressBar(min = 0, max = nc, style = 3, char = "=")
     for(nn in 1:nc){
       data.pair <- dati[(cell==unique(cell)[pair.comp[nn,1]])|(cell==unique(cell)[pair.comp[nn,2]]),]
       res <- test.stat(y = data.pair,stat = st, alternative=1,B)
@@ -28,20 +30,29 @@ pair_comp<-function(dati,B=2000,alpha.ranking=0.05,seed=125,st="dm", paral=FALSE
       P.dependent4dependent.min[,,nn] <- res$pv.min
       P.glob[,1,nn] <- res$pv.comb
       P.glob.min[,1,nn] <- res$pv.comb.min
+      #set progress bar
+      setTxtProgressBar(progbar, nn)
     }
+    close(progbar)
   }
 
   if(paral==TRUE){
-    #here use foreach to speed up computation through paralelization (cluster must have been defined)
-    result<-foreach(nn = 1:nc,.packages = 'ALPERC') %dopar%{
+    # Initialize progress bar
+    progbar <- txtProgressBar(min = 0, max = nc, style = 3, char = "=")
+    print_progress <- function(n) setTxtProgressBar(progbar, n)
+    opts_snow <- list(progress = print_progress)
+    #here use foreach to speed up computation through parallelization (cluster must have been defined)
+    result<-foreach(nn = 1:nc,.packages = 'ALPERC',.options.snow = opts_snow) %dopar%{
       # source("R/test.stat.R")
       # source("R/t2p.R")
       # source("R/comb.R")
       set.seed(seed)
 
       data.pair <- dati[(cell==unique(cell)[pair.comp[nn,1]])|(cell==unique(cell)[pair.comp[nn,2]]),]
-      test.stat(y = data.pair,stat = st, alternative=1,B)
+      t_stat<-test.stat(y = data.pair,stat = st, alternative=1,B)
+      return(t_stat)
     }
+    close(progbar)
 
     for(nn in 1:nc){
       P.dependent4dependent[,,nn]<-result[[nn]]$pv
