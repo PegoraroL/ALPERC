@@ -46,9 +46,9 @@ A character vector that is either "mean" or "uncertainty". In the first case, th
 An integer, that indicates the number of points (randomly sampled) from the surface, for which uncertainty of prediction is reported. Default is 0.
 }
 }
-\details{
+%\details{
 %%  ~~ If necessary, more details than the description above ~~
-}
+%}
 \value{
 An interactive 3D surface plot that shows how the response (from the model) or uncertainty varies with respect to viz_factors, when the fixed_factors are constrained. In the bottom plane the candidate configurations are shown with different colors, corresponding to the different clusters. A number indicates the number of replicates (only viz_factors are considered). Red points indicate the mean uncertainty of predictions in some locations.
 }
@@ -66,14 +66,14 @@ Kuhn, M. (2008). Building Predictive Models in R Using the caret Package. Journa
 \author{
 Luca Pegoraro
 }
-\note{
+%\note{
 %%  ~~further notes~~
-}
+%}
 
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
 \seealso{
-\code{\link{ALPERC}},\code{\link{ALPERC_2D_viz}}, \code{\link{ALPERC_2D_viz_multiv}}, \code{\link{ALPERC_3D_viz_multiv}}}
+\code{\link{ALPERC}},\code{\link{ALPERC_2D_viz}}, \code{\link{ALPERC_2D_viz_multiv}}, \code{\link{ALPERC_3D_viz_multiv}}
 }
 \examples{
 ##Import required data
@@ -82,7 +82,9 @@ data(sigma_cand)
 data(S)
 
 ##import saved models
-model<-readRDS("model.rds")
+library(hetGP)
+
+model<-readRDS(system.file("data", "Robot_arm.rds", package="ALPERC"))
 
 
 ##run the ALPERC function
@@ -91,7 +93,7 @@ ALPERC_results<-ALPERC(n_add=5,
                     sigma_cand=sigma_cand,
                     S=S,
                     strategy="exploration",
-                    varimp_distance=T,
+                    varimp_distance=TRUE,
                     n_clust=NULL,
                     n_boot=500,
                     alpha_rank=0.1,

@@ -42,9 +42,9 @@ A numeric vector that includes the chosen levels of the fixed_factors. The order
 A character vector that is either "mean" or "uncertainty". In the first case, the mean response is plotted, in the latter case the uncertainty is plotted.
 }
 }
-\details{
+%\details{
 %%  ~~ If necessary, more details than the description above ~~
-}
+%}
 \value{
 A 2D contour plot (blue-low, yellow-high) that shows how the average response or average uncertainty (over the responses as predicted by the models) varies with respect to viz_factors, when the fixed_factors are constrained. The symbols in the plot correspond to the configurations proposed in LAMBDA, and the different symbols indicate the different clusters. The color of the symbols corresponds to the position in the rank, from white (low position, small uncertainty) to blue (high position, high uncertainty).
 }
@@ -62,9 +62,9 @@ Kuhn, M. (2008). Building Predictive Models in R Using the caret Package. Journa
 \author{
 Luca Pegoraro
 }
-\note{
+%\note{
 %%  ~~further notes~~
-}
+%}
 
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
@@ -78,15 +78,24 @@ data(sigma_cand)
 data(S)
 
 ##import saved models
-model1<-readRDS("model1.rds")
-model2<-readRDS("model2.rds")
-model3<-readRDS("model3.rds")
-model4<-readRDS("model4.rds")
+library(hetGP)
+
+model1<-readRDS(system.file("data", "Borehole.rds", package="ALPERC"))
+model2<-readRDS(system.file("data", "OTL_circuit.rds", package="ALPERC"))
+model3<-readRDS(system.file("data", "Piston.rds", package="ALPERC"))
+model4<-readRDS(system.file("data", "Piston_mod.rds", package="ALPERC"))
+model5<-readRDS(system.file("data", "Robot_arm.rds", package="ALPERC"))
+model6<-readRDS(system.file("data", "Rosenbrock_Function.rds", package="ALPERC"))
+model7<-readRDS(system.file("data", "Wing_weight.rds", package="ALPERC"))
+
 
 model_list<-list(model1,
                  model2,
                  model3,
-                 model4)
+                 model4,
+                 model5,
+                 model6,
+                 model7)
 
 
 ##run the ALPERC function
@@ -95,7 +104,7 @@ ALPERC_results<-ALPERC(n_add=5,
                       sigma_cand=sigma_cand,
                       S=S,
                       strategy="exploration",
-                      varimp_distance=T,
+                      varimp_distance=TRUE,
                       n_clust=NULL,
                       n_boot=500,
                       alpha_rank=0.1,

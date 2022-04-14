@@ -1,23 +1,28 @@
 Package: ALPERC
 Type: Package
-Title: ALPERC: Active Learning for noisy Physical Experiments based on nonparametric Ranking and Clustering.
+Title: ALPERC: Active Learning for noisy Physical Experiments based on nonparametric Ranking and Clustering
 Version: 0.1.0
 Author: Luca Pegoraro
 Maintainer: Luca Pegoraro <pegoraro@gest.unipd.it>
-Description: Performs sequential data collection in an Active Learning manner following the algorithm by R. Arboretti, R. Ceccato, L. Pegoraro, L. Salmaso (2022) "Active learning for noisy physical experiments with multiple responses".
+Description: Performs sequential data collection in an Active Learning manner following the algorithm by R. Arboretti, R. Ceccato, L. Pegoraro, L. Salmaso (2022) "Active learning for noisy physical experiments with multiple responses". ALPERC is a model-agnostic algorithm suitable for application to physical experimentation when more than two responses are investigated in the same experiment and the objective is to build models that minimize the predictive error globally throughout the design space. The procedure requires that the model provide a quantification of uncertainty of predictions and works best if a quantification of variable importance is provided. Additional functions are provided for a better 2D and 3D visualization of the predictive surface and related design points.
 Depends:
-    akima,
     ggplot2,
     dplyr,
     tidyr,
     tibble,
     forcats,
-    purrr,
+    hetGP,
+    R (>= 3.5)
+Imports:
+    akima,
     usedist,
     factoextra,
     plotly,
     RColorBrewer,
+    grDevices,
+    purrr,
+    doSNOW,
     gplots
-License: What license is it under?
+License: GPL-3
 Encoding: UTF-8
-LazyData: false
+LazyData: true

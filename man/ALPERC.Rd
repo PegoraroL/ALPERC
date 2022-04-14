@@ -47,9 +47,9 @@ paral
   \item{paral}{Either TRUE or FALSE. It indicates whether parallel computation should be employed (default is FALSE). If paral=TRUE, a cluster must be initialized (e.g. via "doSNOW" library).
 }
 }
-\details{
+%\details{
 %%  ~~ If necessary, more details than the description above ~~
-}
+%}
 \value{
 %%  ~Describe the value returned
 %%  If it is a LIST, use
@@ -71,9 +71,9 @@ Arboretti, R., Ceccato, R., Pegoraro, L., Salmaso, L. () Active learning for noi
 \author{
 Luca Pegoraro
 }
-\note{
+%\note{
 %%  ~~further notes~~
-}
+%}
 
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
@@ -92,7 +92,7 @@ ALPERC(n_add=5,
        sigma_cand=sigma_cand,
        S=S,
        strategy="exploration",
-       varimp_distance=T,
+       varimp_distance=TRUE,
        n_clust=NULL,
        n_boot=500,
        alpha_rank=0.1,
@@ -111,7 +111,7 @@ ALPERC(n_add=5,
        sigma_cand=sigma_cand,
        S=S,
        strategy="exploration",
-       varimp_distance=T,
+       varimp_distance=TRUE,
        n_clust=NULL,
        n_boot=500,
        alpha_rank=0.1,

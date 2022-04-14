@@ -13,9 +13,9 @@ silhouette_plot(ALPERC_results)
   \item{ALPERC_results}{The list obtained as an output from ALPERC() function.
 }
 }
-\details{
+%\details{
 %%  ~~ If necessary, more details than the description above ~~
-}
+%}
 \value{
 A Silhouette plot with a vertical dashed line that indicates the best number of clusters according to the Silhouette index.
 }
@@ -27,9 +27,9 @@ Rousseeuw, P. J. (1987). Silhouettes: a graphical aid to the interpretation and 
 \author{
 Luca Pegoraro
 }
-\note{
+%\note{
 %%  ~~further notes~~
-}
+%}
 
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
@@ -46,9 +46,9 @@ data(S)
 ALPERC_results<-ALPERC(n_add=5,
                     D_cand=D_cand,
                     sigma_cand=sigma_cand,
-                   S=S,
+                    S=S,
                     strategy="exploration",
-                    varimp_distance=T,
+                    varimp_distance=TRUE,
                     n_clust=NULL,
                     n_boot=500,
                     alpha_rank=0.1,
@@ -57,15 +57,6 @@ ALPERC_results<-ALPERC(n_add=5,
 ##obtain the silhouette plot
 silhouette_plot(ALPERC_results)
 
-## The function is currently defined as
-function (ALPERC_results)
-{
-    ALPERC_results$clust_choice \%>\% ggplot(aes(x = clusters,
-        y = y, group = 1)) + geom_point() + geom_line() + geom_vline(aes(xintercept = ALPERC_results$clust_choice \%>\%
-        filter(y == max(y)) \%>\% pull(clusters)), linetype = "dashed") +
-        ylab("Average silhouette width") + xlab("Number of clusters") +
-        theme_bw()
-  }
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory (show via RShowDoc("KEYWORDS")):

@@ -42,9 +42,9 @@ A numeric vector that includes the chosen levels of the fixed_factors. The order
 A character vector that is either "mean" or "uncertainty". In the first case, the mean response is plotted, in the latter case the uncertainty is plotted.
 }
 }
-\details{
+%\details{
 %%  ~~ If necessary, more details than the description above ~~
-}
+%}
 \value{
 A 2D contour plot (blue-low, yellow-high) that shows how the mean response or uncertainty (from the model) varies with respect to viz_factors, when the fixed_factors are constrained. The symbols in the plot correspond to the configurations proposed in LAMBDA, and the different symbols indicate the different clusters. The color of the symbols corresponds to the position in the rank, from white (low position, small uncertainty) to blue (high position, high uncertainty). The points in D_add_j are indicated with a red number, that shows the number of replicates of that configuration (a configuration is considered as replicated if another point shares the same configuration of viz_factors, as fixed_factors are not considered).
 }
@@ -63,9 +63,9 @@ Kuhn, M. (2008). Building Predictive Models in R Using the caret Package. Journa
 \author{
 Luca Pegoraro
 }
-\note{
+%\note{
 %%  ~~further notes~~
-}
+%}
 
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
@@ -79,8 +79,9 @@ data(sigma_cand)
 data(S)
 
 ##import saved models
-model<-readRDS("model.rds")
+library(hetGP)
 
+model<-readRDS(system.file("data", "Robot_arm.rds", package="ALPERC"))
 
 ##run the ALPERC function
 ALPERC_results<-ALPERC(n_add=5,
@@ -88,7 +89,7 @@ ALPERC_results<-ALPERC(n_add=5,
                     sigma_cand=sigma_cand,
                     S=S,
                     strategy="exploration",
-                    varimp_distance=T,
+                    varimp_distance=TRUE,
                     n_clust=NULL,
                     n_boot=500,
                     alpha_rank=0.1,

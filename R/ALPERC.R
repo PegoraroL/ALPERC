@@ -1,4 +1,4 @@
-ALPERC<-function(n_add,D_cand,sigma_cand,S,strategy,varimp_distance,n_clust,n_boot, alpha_rank, seed_rank=2105, paral=FALSE){
+ALPERC<-function(n_add,D_cand,sigma_cand,S,strategy,varimp_distance,n_clust=NULL,n_boot, alpha_rank, seed_rank=2105, paral=FALSE){
   #check on ID column
   if(missing(n_add)){
     message("ERROR: argument \"n_add\" is missing, with no default")
@@ -32,10 +32,10 @@ ALPERC<-function(n_add,D_cand,sigma_cand,S,strategy,varimp_distance,n_clust,n_bo
     message("ERROR: argument \"S\" is missing, with no default. If you don't want to supply S, set S=NULL")
     stop()
   }
-  if(missing(n_clust)){
-    message("ERROR: argument \"n_clust\" is missing, with no default. If you want to choose the number of clusters by silhouette index, set n_clust=NULL")
-    stop()
-  }
+#  if(missing(n_clust)){
+#    message("ERROR: argument \"n_clust\" is missing, with no default. If you want to choose the number of clusters by silhouette index, set n_clust=NULL")
+#    stop()
+#  }
   if(missing(seed_rank)){
     message("ERROR: argument \"seed_rank\" is missing, with no default.")
     stop()

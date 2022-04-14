@@ -7,11 +7,11 @@ ALPERC_3D_viz<-function(D_add_j, LAMBDA, model, viz_factors, fixed_factors, fixe
   for(i in 1:ncol(empty_grid)){
     empty_grid[,i]<-fixed_factor_levels[i]
   }
-  empty_grid<-as_tibble(empty_grid)
+  empty_grid<-as_tibble(empty_grid, .name_repair = 'unique')
   names(empty_grid)<-fixed_factors
 
 
-  pred_grid<-as_tibble(cbind(grid,empty_grid))
+  pred_grid<-as_tibble(cbind(grid,empty_grid), .name_repair = 'unique')
   pred_grid<-pred_grid[names_factors]
   if(class(model)[1]=="hetGP"){
     if(what_plot=="mean"){
@@ -22,7 +22,7 @@ ALPERC_3D_viz<-function(D_add_j, LAMBDA, model, viz_factors, fixed_factors, fixe
       SE_pred_y<-(sqrt(predict(x = X, object = model)$nugs +
                          predict(x = X, object = model)$sd2))
 
-      pred_grid_y<-as_tibble(cbind(pred_grid,y, SE_pred_y))
+      pred_grid_y<-as_tibble(cbind(pred_grid,y, SE_pred_y), .name_repair = 'unique')
       #################################
     }
 
@@ -34,7 +34,7 @@ ALPERC_3D_viz<-function(D_add_j, LAMBDA, model, viz_factors, fixed_factors, fixe
       SE_pred_y<-(sqrt(predict(x = X, object = model)$nugs +
                          predict(x = X, object = model)$sd2))
 
-      pred_grid_y<-as_tibble(cbind(pred_grid,y, SE_pred_y))
+      pred_grid_y<-as_tibble(cbind(pred_grid,y, SE_pred_y), .name_repair = 'unique')
       #################################
     }
   }else if(model["method"]=="ranger"){#this only works for ranger models trained via caret!
@@ -51,7 +51,7 @@ ALPERC_3D_viz<-function(D_add_j, LAMBDA, model, viz_factors, fixed_factors, fixe
 
       SE_pred_y<-((infjack+jack)/2)
 
-      pred_grid_y<-as_tibble(cbind(pred_grid,y, SE_pred_y))
+      pred_grid_y<-as_tibble(cbind(pred_grid,y, SE_pred_y), .name_repair = 'unique')
       #################################
     }
 
@@ -67,14 +67,14 @@ ALPERC_3D_viz<-function(D_add_j, LAMBDA, model, viz_factors, fixed_factors, fixe
       y<-((infjack+jack)/2)
       SE_pred_y<-y
 
-      pred_grid_y<-as_tibble(cbind(pred_grid,y, SE_pred_y))
+      pred_grid_y<-as_tibble(cbind(pred_grid,y, SE_pred_y), .name_repair = 'unique')
       #################################
     }
   }
 
 
   s<-NULL
-  s<-interp(pred_grid%>%pull(viz_factors[1]), pred_grid%>%pull(viz_factors[2]), y, dupl="mean")
+  s<-interp(pred_grid%>%pull(viz_factors[1]), pred_grid%>%pull(viz_factors[2]), y, duplicate="mean")
 
   #non usiamo s_norm. Just in case dovessimo ampliare funzionalità funzione.
   s_norm<-NULL

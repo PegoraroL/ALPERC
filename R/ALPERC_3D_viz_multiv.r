@@ -7,11 +7,11 @@ ALPERC_3D_viz_multiv<-function(D_add_j, LAMBDA, model, viz_factors, fixed_factor
   for(i in 1:ncol(empty_grid)){
     empty_grid[,i]<-fixed_factor_levels[i]
   }
-  empty_grid<-as_tibble(empty_grid)
+  empty_grid<-as_tibble(empty_grid, .name_repair = 'unique')
   names(empty_grid)<-fixed_factors
 
 
-  pred_grid<-as_tibble(cbind(grid,empty_grid))
+  pred_grid<-as_tibble(cbind(grid,empty_grid), .name_repair = 'unique')
   pred_grid<-pred_grid[names_factors]
 
   #several models!
@@ -34,7 +34,7 @@ ALPERC_3D_viz_multiv<-function(D_add_j, LAMBDA, model, viz_factors, fixed_factor
         SE_pred_y<-(sqrt(predict(x = X, object = mdl)$nugs +
                            predict(x = X, object = mdl)$sd2))
 
-        pred_grid_y<-as_tibble(cbind(pred_grid,y, SE_pred_y))
+        pred_grid_y<-as_tibble(cbind(pred_grid,y, SE_pred_y), .name_repair = 'unique')
         pred_grid_y_list[[indicatore]]<-pred_grid_y
         y_list[[indicatore]]<-y
         SE_pred_y_list[[indicatore]]<-SE_pred_y
@@ -67,14 +67,14 @@ ALPERC_3D_viz_multiv<-function(D_add_j, LAMBDA, model, viz_factors, fixed_factor
 
         SE_pred_y<-((infjack+jack)/2)
 
-        pred_grid_y<-as_tibble(cbind(pred_grid,y, SE_pred_y))
+        pred_grid_y<-as_tibble(cbind(pred_grid,y, SE_pred_y), .name_repair = 'unique')
         pred_grid_y_list[[indicatore]]<-pred_grid_y
         y_list[[indicatore]]<-y
         SE_pred_y_list[[indicatore]]<-SE_pred_y
         #################################
 
         s<-NULL
-        s<-interp(pred_grid%>%pull(viz_factors[1]), pred_grid%>%pull(viz_factors[2]), y, dupl="mean")
+        s<-interp(pred_grid%>%pull(viz_factors[1]), pred_grid%>%pull(viz_factors[2]), y, duplicate="mean")
         s_list[[indicatore]]<-s
         z_list[[indicatore]]<-s$z
 
@@ -100,7 +100,7 @@ ALPERC_3D_viz_multiv<-function(D_add_j, LAMBDA, model, viz_factors, fixed_factor
         SE_pred_y<-(sqrt(predict(x = X, object = mdl)$nugs +
                            predict(x = X, object = mdl)$sd2))
 
-        pred_grid_y<-as_tibble(cbind(pred_grid,y, SE_pred_y))
+        pred_grid_y<-as_tibble(cbind(pred_grid,y, SE_pred_y), .name_repair = 'unique')
         pred_grid_y_list[[indicatore]]<-pred_grid_y
         y_list[[indicatore]]<-y
         SE_pred_y_list[[indicatore]]<-SE_pred_y
@@ -132,7 +132,7 @@ ALPERC_3D_viz_multiv<-function(D_add_j, LAMBDA, model, viz_factors, fixed_factor
         y<-((infjack+jack)/2)
         SE_pred_y<-y
 
-        pred_grid_y<-as_tibble(cbind(pred_grid,y, SE_pred_y))
+        pred_grid_y<-as_tibble(cbind(pred_grid,y, SE_pred_y), .name_repair = 'unique')
         pred_grid_y_list[[indicatore]]<-pred_grid_y
         y_list[[indicatore]]<-y
         SE_pred_y_list[[indicatore]]<-SE_pred_y

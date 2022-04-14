@@ -22,7 +22,7 @@ pair_comp<-function(dati,B=2000,alpha.ranking=0.05,seed=125,st="dm", paral=FALSE
 
   if(paral==FALSE){
     # Initialize progress bar
-    progbar <- txtProgressBar(min = 0, max = nc, style = 3, char = "=")
+    progbar <- txtProgressBar(min = 0, max = nc, style = 3, char = "=", width=getOption("width"))
     for(nn in 1:nc){
       data.pair <- dati[(cell==unique(cell)[pair.comp[nn,1]])|(cell==unique(cell)[pair.comp[nn,2]]),]
       res <- test.stat(y = data.pair,stat = st, alternative=1,B)
@@ -38,7 +38,7 @@ pair_comp<-function(dati,B=2000,alpha.ranking=0.05,seed=125,st="dm", paral=FALSE
 
   if(paral==TRUE){
     # Initialize progress bar
-    progbar <- txtProgressBar(min = 0, max = nc, style = 3, char = "=")
+    progbar <- txtProgressBar(min = 0, max = nc, style = 3, char = "=", width=getOption("width"))
     print_progress <- function(n) setTxtProgressBar(progbar, n)
     opts_snow <- list(progress = print_progress)
     #here use foreach to speed up computation through parallelization (cluster must have been defined)
