@@ -73,9 +73,9 @@ Luca Pegoraro
 }
 \examples{
 ##Import required data
-data(D_cand)
-data(sigma_cand)
-data(S)
+data("D_cand")
+data("sigma_cand")
+data("S")
 
 ##import saved models
 library(hetGP)

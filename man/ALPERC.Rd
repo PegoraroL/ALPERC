@@ -82,9 +82,9 @@ Luca Pegoraro
 }
 \examples{
 ##Import required data
-data(D_cand)
-data(sigma_cand)
-data(S)
+data("D_cand")
+data("sigma_cand")
+data("S")
 
 ##run the function
 ALPERC(n_add=5,
