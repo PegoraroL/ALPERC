@@ -1,4 +1,4 @@
-ALPERC_2D_viz_multiv<-function(D_add_j, LAMBDA, model, viz_factors, fixed_factors, fixed_factor_levels, what_plot){
+ALPERC_2D_viz_multiv<-function(D_add_j, LAMBDA, model_fnct, viz_factors, fixed_factors, fixed_factor_levels, what_plot){
   names_factors <- names(D_add_j)[-1]
   grid<-expand.grid(seq(0,1,length.out=100),
                     seq(0,1,length.out=100))
@@ -20,107 +20,48 @@ ALPERC_2D_viz_multiv<-function(D_add_j, LAMBDA, model, viz_factors, fixed_factor
   data_obs_pred_test_list<-list()
   lista_z_norm<-list()
   indicatore<-0
-
-
   if(what_plot=="mean"){
-    for(mdl in model){
-      if(class(mdl)[1]=="hetGP"){
-        y<-SE_pred_y<-NULL
-        indicatore<-indicatore+1
-        #this only works for hetgp models!
-        X<-as.matrix(pred_grid)
-        y<-predict(x = X, object = mdl)$mean
+    for(mdl in model_fnct){
+      y<-SE_pred_y<-NULL
+      indicatore<-indicatore+1
+      X<-as.matrix(pred_grid)
+      y<-mdl(X)[[1]]
 
-        #################################
+      s<-NULL
+      s<-interp(pred_grid%>%pull(viz_factors[1]), pred_grid%>%pull(viz_factors[2]), y, duplicate="mean")
+      s_list[[indicatore]]<-s
 
-        s<-NULL
-        s<-interp(pred_grid%>%pull(viz_factors[1]), pred_grid%>%pull(viz_factors[2]), y, duplicate="mean")
-        s_list[[indicatore]]<-s
-
-        #non usiamo s_norm. Just in case dovessimo ampliare funzionalità funzione.
-        s_norm<-NULL
-        s_norm<-list(x=(s$x-min(s$x))/(max(s$x)-min(s$x)),y=(s$y-min(s$y))/(max(s$y)-min(s$y)),
-                     z=(s$z-min(s$z))/(max(s$z)-min(s$z)))
-        s_norm_list[[indicatore]]<-s_norm
-        lista_z_norm[[indicatore]]<-s_norm$z
-      }else if(mdl["method"]=="ranger"){
-        y<-SE_pred_y<-NULL
-        indicatore<-indicatore+1
-
-        y<-predict(mdl$finalModel, pred_grid,type = "response")$predictions
-
-        #################################
-
-        s<-NULL
-        s<-interp(pred_grid%>%pull(viz_factors[1]), pred_grid%>%pull(viz_factors[2]), y, dupl="mean")
-        s_list[[indicatore]]<-s
-
-        #non usiamo s_norm. Just in case dovessimo ampliare funzionalità funzione.
-        s_norm<-NULL
-        s_norm<-list(x=(s$x-min(s$x))/(max(s$x)-min(s$x)),y=(s$y-min(s$y))/(max(s$y)-min(s$y)),
-                     z=(s$z-min(s$z))/(max(s$z)-min(s$z)))
-        s_norm_list[[indicatore]]<-s_norm
-        lista_z_norm[[indicatore]]<-s_norm$z
-      }
+      #non usiamo s_norm. Just in case dovessimo ampliare funzionalità funzione.
+      s_norm<-NULL
+      s_norm<-list(x=(s$x-min(s$x))/(max(s$x)-min(s$x)),y=(s$y-min(s$y))/(max(s$y)-min(s$y)),
+                   z=(s$z-min(s$z))/(max(s$z)-min(s$z)))
+      s_norm_list[[indicatore]]<-s_norm
+      lista_z_norm[[indicatore]]<-s_norm$z
     }
   }
+    if(what_plot=="uncertainty"){
+      for(mdl in model_fnct){
+          y<-SE_pred_y<-NULL
+          indicatore<-indicatore+1
+          X<-as.matrix(pred_grid)
 
-  if(what_plot=="uncertainty"){
-    for(mdl in model){
-      if(class(mdl)[1]=="hetGP"){
-        y<-SE_pred_y<-NULL
-        indicatore<-indicatore+1
-        #this only works for hetgp models!
-        X<-as.matrix(pred_grid)
-        y<-(sqrt(predict(x = X, object = mdl)$nugs +
-                   predict(x = X, object = mdl)$sd2))
-        SE_pred_y<-(sqrt(predict(x = X, object = mdl)$nugs +
-                           predict(x = X, object = mdl)$sd2))
+          y<-mdl(X)[[2]]
+          SE_pred_y<-mdl(X)[[2]]
 
-        pred_grid_y<-as_tibble(cbind(pred_grid,y, SE_pred_y), .name_repair = 'unique')
-        #################################
+          pred_grid_y<-as_tibble(cbind(pred_grid,y, SE_pred_y), .name_repair = 'unique')
 
-        s<-NULL
-        s<-interp(pred_grid%>%pull(viz_factors[1]), pred_grid%>%pull(viz_factors[2]), y, dupl="mean")
-        s_list[[indicatore]]<-s
+          s<-NULL
+          s<-interp(pred_grid%>%pull(viz_factors[1]), pred_grid%>%pull(viz_factors[2]), y, dupl="mean")
+          s_list[[indicatore]]<-s
 
-        #non usiamo s_norm. Just in case dovessimo ampliare funzionalità funzione.
-        s_norm<-NULL
-        s_norm<-list(x=(s$x-min(s$x))/(max(s$x)-min(s$x)),y=(s$y-min(s$y))/(max(s$y)-min(s$y)),
-                     z=(s$z-min(s$z))/(max(s$z)-min(s$z)))
-        s_norm_list[[indicatore]]<-s_norm
-        lista_z_norm[[indicatore]]<-s_norm$z
-      }else if(mdl["method"]=="ranger"){#this only works for ranger models trained via caret!
-        y<-SE_pred_y<-NULL
-        indicatore<-indicatore+1
-
-        infjack<-NULL
-        infjack<-predict(mdl$finalModel, pred_grid,type = "se",
-                         se.method = "infjack")$se
-
-        jack<-NULL
-        jack<-predict(mdl$finalModel, pred_grid,type = "se",
-                      se.method = "jack")$se
-
-        y<-((infjack+jack)/2)
-        SE_pred_y<-y
-
-        pred_grid_y<-as_tibble(cbind(pred_grid,y, SE_pred_y), .name_repair = 'unique')
-        #################################
-
-        s<-NULL
-        s<-interp(pred_grid%>%pull(viz_factors[1]), pred_grid%>%pull(viz_factors[2]), y, dupl="mean")
-        s_list[[indicatore]]<-s
-
-        #non usiamo s_norm. Just in case dovessimo ampliare funzionalità funzione.
-        s_norm<-NULL
-        s_norm<-list(x=(s$x-min(s$x))/(max(s$x)-min(s$x)),y=(s$y-min(s$y))/(max(s$y)-min(s$y)),
-                     z=(s$z-min(s$z))/(max(s$z)-min(s$z)))
-        s_norm_list[[indicatore]]<-s_norm
-        lista_z_norm[[indicatore]]<-s_norm$z
+          #non usiamo s_norm. Just in case dovessimo ampliare funzionalità funzione.
+          s_norm<-NULL
+          s_norm<-list(x=(s$x-min(s$x))/(max(s$x)-min(s$x)),y=(s$y-min(s$y))/(max(s$y)-min(s$y)),
+                       z=(s$z-min(s$z))/(max(s$z)-min(s$z)))
+          s_norm_list[[indicatore]]<-s_norm
+          lista_z_norm[[indicatore]]<-s_norm$z
       }
     }
-  }
 
   grp_factors<- lapply(names_factors, as.symbol)
   grp_factors_viz<-lapply(viz_factors, as.symbol)

@@ -1,68 +1,54 @@
-ALPERC<-function(n_add,D_cand,sigma_cand,S,strategy,varimp_distance,n_clust=NULL,n_boot, alpha_rank, seed_rank=2105, paral=FALSE){
+ALPERC<-function(n_add,D_cand,sigma_cand,S=NULL,strategy="exploration",varimp_distance,n_clust=NULL,n_boot=1000,force_n_boot=TRUE, alpha_rank=0.1, seed_rank=2105, paral=FALSE){
   #check on ID column
+
   if(missing(n_add)){
-    message("ERROR: argument \"n_add\" is missing, with no default")
-    stop()
+    stop("Argument \"n_add\" is missing, with no default")
   }
   if(missing(D_cand)){
-    message("ERROR: argument \"D_cand\" is missing, with no default")
-    stop()
+    stop("Argument \"D_cand\" is missing, with no default")
   }
   if(missing(sigma_cand)){
-    message("ERROR: argument \"sigma_cand\" is missing, with no default")
-    stop()
+    stop("Argument \"sigma_cand\" is missing, with no default")
   }
   if(missing(strategy)){
-    message("ERROR: argument \"strategy\" is missing, with no default")
-    stop()
+    stop("Argument \"strategy\" is missing, with no default")
   }
   if(missing(varimp_distance)){
-    message("ERROR: argument \"varimp_distance\" is missing, with no default")
-    stop()
+    stop("Argument \"varimp_distance\" is missing, with no default")
   }
   if(missing(n_boot)){
-    message("ERROR: argument \"n_boot\" is missing, with no default")
-    stop()
+    stop("Argument \"n_boot\" is missing, with no default")
   }
   if(missing(alpha_rank)){
-    message("ERROR: argument \"alpha_rank\" is missing, with no default")
-    stop()
+    stop("Argument \"alpha_rank\" is missing, with no default")
   }
   if(missing(S)){
-    message("ERROR: argument \"S\" is missing, with no default. If you don't want to supply S, set S=NULL")
-    stop()
-  }
-#  if(missing(n_clust)){
-#    message("ERROR: argument \"n_clust\" is missing, with no default. If you want to choose the number of clusters by silhouette index, set n_clust=NULL")
-#    stop()
-#  }
-  if(missing(seed_rank)){
-    message("ERROR: argument \"seed_rank\" is missing, with no default.")
-    stop()
+    stop("Argument \"S\" is missing, with no default. If you don't want to supply S, set S=NULL")
   }
   if(is.null(seed_rank)){
-    message("ERROR: argument \"seed_rank\" is missing, with no default.")
+    message("ERROR: argument \"seed_rank\" set to NULL.")
     stop()
   }
   if(names(D_cand)[1]!=names(sigma_cand)[1]){
-    message("ERROR: The first column of D_cand and sigma_cand must have same name (ID column)")
-    stop()
+    stop("The first column of D_cand and sigma_cand must have same name (ID column)")
   }
   #check on strategy name
   if(!strategy %in% c("exploration" , "exploitation")){
-    message("ERROR: Strategy must be \"exploration\" or \"exploitation\" ")
-    stop()
+    stop("Strategy must be \"exploration\" or \"exploitation\" ")
   }
   if(is.null(S)){
     varimp_distance=FALSE
   }else{
     #check if column names of  D_cand, == first row of S
     if(any(names(D_cand)[-1]!=S%>%pull(1))){
-      message("ERROR: Column names of D_cand (except from ID) must be equal to first row of S")
-      stop()
+      stop("Column names of D_cand (except from ID) must be equal to first row of S")
     }
   }
-
+  if(force_n_boot==FALSE && factorial(length(names(sigma_cand)[-1])*2)/(factorial(length(names(sigma_cand)[-1]))*factorial(length(names(sigma_cand)[-1])*2-length(names(sigma_cand)[-1])))
+  <200){
+    message(paste0("Warning: with ",length(names(sigma_cand)[-1])," responses, the p-value of the pairwise comparisons used in the ranking is bounded to be greater than ",round(1/(factorial(length(names(sigma_cand)[-1])*2)/(factorial(length(names(sigma_cand)[-1]))*factorial(length(names(sigma_cand)[-1])*2-length(names(sigma_cand)[-1])))),digits=5) ,
+                        ". We suggest to set force_n_boot==TRUE."))
+  }
 
 
   #calculate mean variable importance
@@ -123,7 +109,7 @@ ALPERC<-function(n_add,D_cand,sigma_cand,S,strategy,varimp_distance,n_clust=NULL
   t0<-Sys.time()
   print("Start NPC ranking")
   print(t0)
-  risultati<-pair_comp(as.data.frame(sigma_cand_long%>%select(-Ys)),B=n_boot,alpha.ranking=alpha_rank,seed=seed_rank,st="dm",paral)
+  risultati<-pair_comp(as.data.frame(sigma_cand_long%>%select(-Ys)),B=n_boot,alpha.ranking=alpha_rank,seed=seed_rank,st="dm",paral,force_n_boot)
   t1<-Sys.time()
   print(t1-t0)
   print("End NPC ranking")
@@ -153,13 +139,13 @@ ALPERC<-function(n_add,D_cand,sigma_cand,S,strategy,varimp_distance,n_clust=NULL
   n_batch<-min(n_add, nrow(LAMBDA_unique))
 
   D_add_j<-NULL
-  #NON AMMETTI REPLICHE SE STESSO CLUSTER E STESSO RANK
+  #do not perform replicates if more configurations belong to same cluster and have same rank
   if(strategy=="exploration"){
     D_add_j<-D_cand[(LAMBDA_unique%>%pull(names(sigma_cand)[1]))[1:n_batch],]
   }
-  # AMMETTI REPLICHE SE STESSO CLUSTER E STESSO RANK
+  #do perform replicates if more configurations belong to same cluster and have same rank
   if(strategy=="exploitation"){
     D_add_j<-D_cand[rep(LAMBDA_unique%>%pull(names(sigma_cand)[1]), LAMBDA_unique%>%pull(n))[1:n_batch],]
   }
-  return(list(strategy=strategy,seed_rank=seed_rank,varimp_distance=varimp_distance,clust_choice=as_tibble(clust_opt$data),nclust_criterion=nclust_criterion,best_nclust=best_nclust, LAMBDA = LAMBDA , D_add_j = D_add_j))
+  return(list(strategy=strategy,seed_rank=seed_rank,n_permut_comparisons=risultati$N_permut_unique,varimp_distance=varimp_distance,clust_choice=as_tibble(clust_opt$data),nclust_criterion=nclust_criterion,best_nclust=best_nclust, LAMBDA = LAMBDA , D_add_j = D_add_j))
 }

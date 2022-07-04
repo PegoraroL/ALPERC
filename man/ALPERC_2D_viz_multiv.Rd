@@ -5,13 +5,13 @@
 ALPERC_2D_viz_multiv
 }
 \description{
-A function equivalent to ALPERC_2D_viz(), but provides a visualization of multiple responses in one plot. The contour plot is obtained as the average of the mean responses (or uncertainty) from the models. For this reason, raw data (responses) should be transformed to 0-1 before fitting the models. It currently works only for hetGP and ranger models. For an effective visualization, the trained models (independent variables), D_add_j and LAMBDA should consider data rescaled to 0-1.
+A function equivalent to ALPERC_2D_viz(), but provides a visualization of multiple responses in one plot. The contour plot is obtained as the average of the mean responses (or uncertainty) from the models. For this reason, raw data (responses) should be transformed to 0-1 before fitting the models. For an effective visualization, the trained models (independent variables), D_add_j and LAMBDA should consider data rescaled to 0-1.
 }
 \usage{
 ALPERC_2D_viz_multiv(
                     D_add_j,
                     LAMBDA,
-                    model,
+                    model_fnct,
                     viz_factors,
                     fixed_factors,
                     fixed_factor_levels,
@@ -26,8 +26,8 @@ A tibble, that is an output of ALPERC() function.
   \item{LAMBDA}{
 A tibble, that is an output of ALPERC() function.
 }
-  \item{model}{
-	A list of hetGP or ranger (trained via caret) models.
+  \item{model_fnct}{
+		A list of functions each returning a list of two elements, where the first element indicates the predictive mean and the second the predictive uncertainty.
 }
   \item{viz_factors}{
 A character vector that includes the names of 2 factors that will be used in the plot.
@@ -49,13 +49,11 @@ A character vector that is either "mean" or "uncertainty". In the first case, th
 A 2D contour plot (blue-low, yellow-high) that shows how the average response or average uncertainty (over the responses as predicted by the models) varies with respect to viz_factors, when the fixed_factors are constrained. The symbols in the plot correspond to the configurations proposed in LAMBDA, and the different symbols indicate the different clusters. The color of the symbols corresponds to the position in the rank, from white (low position, small uncertainty) to blue (high position, high uncertainty).
 }
 \references{
-Arboretti, R., Ceccato, R., Pegoraro, L., Salmaso, L. () Active learning for noisy physical experiments with multiple responses
+Arboretti, R., Ceccato, R., Pegoraro, L., Salmaso, L. (2022), Active learning for noisy physical experiments with more than two responses, Chemometrics and Intelligent Laboratory Systems, https://doi.org/10.1016/j.chemolab.2022.104595
 
 Binois, M., Gramacy, R. B., & Ludkovski, M. (2018). Practical Heteroscedastic Gaussian Process Modeling for Large Simulation Experiments, Journal of Computational and Graphical Statistics, 27(4), 808-821, https://doi.org/10.1080/10618600.2018.1458625
 
 Binois, M., & Gramacy, R. B. (2021). hetGP: Heteroskedastic Gaussian Process Modeling and Sequential Design in R. Journal of Statistical Software, 98(13), 1-44. https://doi.org/10.18637/jss.v098.i13
-
-Wright MN, Ziegler A (2017). ranger: A Fast Implementation of Random Forests for High Dimensional Data in C++ and R. Journal of Statistical Software, 77(1), 1–17. doi: 10.18637/jss
 
 Kuhn, M. (2008). Building Predictive Models in R Using the caret Package. Journal of Statistical Software, 28(5), 1 - 26. doi:http://dx.doi.org/10.18637/jss.v028.i05
 }
@@ -89,14 +87,59 @@ model6<-readRDS(system.file("data", "Rosenbrock_Function.rds", package="ALPERC")
 model7<-readRDS(system.file("data", "Wing_weight.rds", package="ALPERC"))
 
 
-model_list<-list(model1,
-                 model2,
-                 model3,
-                 model4,
-                 model5,
-                 model6,
-                 model7)
+##define function that returns predictive mean and uncertainty given the model
+model_fnct1<-function(X){
+  pred_m<-predict(x = X, object = model1)$mean
+  pred_unc<-(sqrt(predict(x = X, object = model1)$nugs +
+                       predict(x = X, object = model1)$sd2))
+  return(list(pred_m,pred_unc))
+}
+model_fnct2<-function(X){
+  pred_m<-predict(x = X, object = model2)$mean
+  pred_unc<-(sqrt(predict(x = X, object = model2)$nugs +
+                       predict(x = X, object = model3)$sd2))
+  return(list(pred_m,pred_unc))
+}
+model_fnct3<-function(X){
+  pred_m<-predict(x = X, object = model3)$mean
+  pred_unc<-(sqrt(predict(x = X, object = model3)$nugs +
+                       predict(x = X, object = model3)$sd2))
+  return(list(pred_m,pred_unc))
+}
+model_fnct4<-function(X){
+  pred_m<-predict(x = X, object = model4)$mean
+  pred_unc<-(sqrt(predict(x = X, object = model4)$nugs +
+                       predict(x = X, object = model4)$sd2))
+  return(list(pred_m,pred_unc))
+}
+model_fnct5<-function(X){
+  pred_m<-predict(x = X, object = model5)$mean
+  pred_unc<-(sqrt(predict(x = X, object = model5)$nugs +
+                       predict(x = X, object = model5)$sd2))
+  return(list(pred_m,pred_unc))
+}
+model_fnct6<-function(X){
+  pred_m<-predict(x = X, object = model6)$mean
+  pred_unc<-(sqrt(predict(x = X, object = model6)$nugs +
+                       predict(x = X, object = model6)$sd2))
+  return(list(pred_m,pred_unc))
+}
+model_fnct7<-function(X){
+  pred_m<-predict(x = X, object = model7)$mean
+  pred_unc<-(sqrt(predict(x = X, object = model7)$nugs +
+                       predict(x = X, object = model7)$sd2))
+  return(list(pred_m,pred_unc))
+}
 
+
+model_fnct_list<-list(model_fnct1,
+                      model_fnct2,
+                      model_fnct3,
+                      model_fnct4,
+                      model_fnct5,
+                      model_fnct6,
+                      model_fnct7
+                      )
 
 ##run the ALPERC function
 ALPERC_results<-ALPERC(n_add=5,
@@ -113,7 +156,7 @@ ALPERC_results<-ALPERC(n_add=5,
 ##obtain the 2D visualization
 ALPERC_2D_viz_multiv(D_add_j=ALPERC_results$D_add_j,
                     LAMBDA=ALPERC_results$LAMBDA,
-                    model=model_list,
+                    model_fnct=model_fnct_list,
                     viz_factors=c("B", "C"),
                     fixed_factors=c("A","D","E","F"),
                     fixed_factor_levels=c(0.5,0.5,0.5,0.5),

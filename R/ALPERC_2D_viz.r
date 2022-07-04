@@ -1,4 +1,4 @@
-ALPERC_2D_viz<-function(D_add_j, LAMBDA, model, viz_factors, fixed_factors, fixed_factor_levels, what_plot){
+ALPERC_2D_viz<-function(D_add_j, LAMBDA, model_fnct, viz_factors, fixed_factors, fixed_factor_levels, what_plot){
   names_factors <- names(D_add_j)[-1]
   grid<-expand.grid(seq(0,1,length.out=100),
                     seq(0,1,length.out=100))
@@ -14,39 +14,13 @@ ALPERC_2D_viz<-function(D_add_j, LAMBDA, model, viz_factors, fixed_factors, fixe
   pred_grid<-as_tibble(cbind(grid,empty_grid), .name_repair = 'unique')
   pred_grid<-pred_grid[names_factors]
 
-  if(class(model)[1]=="hetGP"){
-    if(what_plot=="mean"){
-      #this only works for hetgp models!
-      X<-as.matrix(pred_grid)
-      y<-predict(x = X, object = model)$mean
-      #################################
-    }
-
-    if(what_plot=="uncertainty"){
-      #this only works for hetgp models!
-      X<-as.matrix(pred_grid)
-      y<-(sqrt(predict(x = X, object = model)$nugs +
-                 predict(x = X, object = model)$sd2))
-      #################################
-    }
-  }else if(model["method"]=="ranger"){#this only works for ranger models trained via caret!
-    if(what_plot=="mean"){
-      y<-predict(model$finalModel, pred_grid,type = "response")$predictions
-      #################################
-    }
-
-    if(what_plot=="uncertainty"){
-      infjack<-NULL
-      infjack<-predict(model$finalModel, pred_grid,type = "se",
-                       se.method = "infjack")$se
-
-      jack<-NULL
-      jack<-predict(model$finalModel, pred_grid,type = "se",
-                    se.method = "jack")$se
-
-      y<-((infjack+jack)/2)
-      #################################
-    }
+  if(what_plot=="mean"){
+    X<-as.matrix(pred_grid)
+    y<-model_fnct(X)[[1]]
+  }
+  if(what_plot=="uncertainty"){
+    X<-as.matrix(pred_grid)
+    y<-model_fnct(X)[[2]]
   }
 
 
@@ -81,7 +55,7 @@ ALPERC_2D_viz<-function(D_add_j, LAMBDA, model, viz_factors, fixed_factors, fixe
   df_prop_point$colore<-pal[df_prop_point$cluster]
   df_prop_point$colore<-col2hex(df_prop_point$colore)
 
-  #numero di sfumature di blu per info su rank
+  #number of blue shades for info on ranks
   pal_blues<-colorRampPalette(brewer.pal(9,"Blues"))(nlevels(as.factor(proposed_points_afterclusters_Xs$rank)))
   pal_blues<-setNames(pal_blues[1:nlevels(as.factor(proposed_points_afterclusters_Xs$rank))], levels(as.factor(proposed_points_afterclusters_Xs$rank)))
   proposed_points_afterclusters_Xs$colore<-pal_blues[as.factor(proposed_points_afterclusters_Xs$rank)]
@@ -95,11 +69,6 @@ ALPERC_2D_viz<-function(D_add_j, LAMBDA, model, viz_factors, fixed_factors, fixe
   sub_2d_plot<-paste(sub_2d_plot_element,collapse=", ")
 
 
-  #2D plot
-  # png(filename=paste0(plot.path,which_seed,"_",fnct_name,"_plot_2D_it",which_iteration,".png"),
-  #     width = 600, height = 600)
-
-  # plot.new() ## clean up device
   image(s,col=topo.colors(128), main="", xlab = viz_factors[1], ylab=viz_factors[2],
         sub=sub_2d_plot)
   points(proposed_points_afterclusters_Xs%>%select(all_of(viz_factors)),pch=as.numeric(as.character(proposed_points_afterclusters_Xs$cluster)),cex=2,
@@ -108,7 +77,6 @@ ALPERC_2D_viz<-function(D_add_j, LAMBDA, model, viz_factors, fixed_factors, fixe
        labels=runs_to_do%>%ungroup()%>%select(all_of(viz_factors), n_repl)%>%group_by(!!!grp_factors_viz)%>%mutate(n=sum(n_repl))%>%
          select(-n_repl)%>%unique%>%pull(n),
        cex=.9, col="red", font=2)
-  # dev.off()
   p <- recordPlot()
   return(p)
 }

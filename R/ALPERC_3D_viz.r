@@ -1,4 +1,4 @@
-ALPERC_3D_viz<-function(D_add_j, LAMBDA, model, viz_factors, fixed_factors, fixed_factor_levels, what_plot, n_pred_points=0){
+ALPERC_3D_viz<-function(D_add_j, LAMBDA, model_fnct, viz_factors, fixed_factors, fixed_factor_levels, what_plot, n_pred_points=0){
   names_factors <- names(D_add_j)[-1]
   grid<-expand.grid(seq(0,1,length.out=100),
                     seq(0,1,length.out=100))
@@ -13,70 +13,25 @@ ALPERC_3D_viz<-function(D_add_j, LAMBDA, model, viz_factors, fixed_factors, fixe
 
   pred_grid<-as_tibble(cbind(grid,empty_grid), .name_repair = 'unique')
   pred_grid<-pred_grid[names_factors]
-  if(class(model)[1]=="hetGP"){
-    if(what_plot=="mean"){
-      #this only works for hetgp models!
-      X<-as.matrix(pred_grid)
-      y<-predict(x = X, object = model)$mean
 
-      SE_pred_y<-(sqrt(predict(x = X, object = model)$nugs +
-                         predict(x = X, object = model)$sd2))
-
-      pred_grid_y<-as_tibble(cbind(pred_grid,y, SE_pred_y), .name_repair = 'unique')
-      #################################
-    }
-
-    if(what_plot=="uncertainty"){
-      #this only works for hetgp models!
-      X<-as.matrix(pred_grid)
-      y<-(sqrt(predict(x = X, object = model)$nugs +
-                 predict(x = X, object = model)$sd2))
-      SE_pred_y<-(sqrt(predict(x = X, object = model)$nugs +
-                         predict(x = X, object = model)$sd2))
-
-      pred_grid_y<-as_tibble(cbind(pred_grid,y, SE_pred_y), .name_repair = 'unique')
-      #################################
-    }
-  }else if(model["method"]=="ranger"){#this only works for ranger models trained via caret!
-    if(what_plot=="mean"){
-      y<-predict(model$finalModel, pred_grid,type = "response")$predictions
-
-      infjack<-NULL
-      infjack<-predict(model$finalModel, pred_grid,type = "se",
-                       se.method = "infjack")$se
-
-      jack<-NULL
-      jack<-predict(model$finalModel, pred_grid,type = "se",
-                    se.method = "jack")$se
-
-      SE_pred_y<-((infjack+jack)/2)
-
-      pred_grid_y<-as_tibble(cbind(pred_grid,y, SE_pred_y), .name_repair = 'unique')
-      #################################
-    }
-
-    if(what_plot=="uncertainty"){
-      infjack<-NULL
-      infjack<-predict(model$finalModel, pred_grid,type = "se",
-                       se.method = "infjack")$se
-
-      jack<-NULL
-      jack<-predict(model$finalModel, pred_grid,type = "se",
-                    se.method = "jack")$se
-
-      y<-((infjack+jack)/2)
-      SE_pred_y<-y
-
-      pred_grid_y<-as_tibble(cbind(pred_grid,y, SE_pred_y), .name_repair = 'unique')
-      #################################
-    }
+  if(what_plot=="mean"){
+    X<-as.matrix(pred_grid)
+    y<-model_fnct(X)[[1]]
+    SE_pred_y<-model_fnct(X)[[2]]
+    pred_grid_y<-as_tibble(cbind(pred_grid,y, SE_pred_y), .name_repair = 'unique')
+  }
+  if(what_plot=="uncertainty"){
+    X<-as.matrix(pred_grid)
+    y<-model_fnct(X)[[2]]
+    SE_pred_y<-model_fnct(X)[[2]]
+    pred_grid_y<-as_tibble(cbind(pred_grid,y, SE_pred_y), .name_repair = 'unique')
   }
 
 
   s<-NULL
   s<-interp(pred_grid%>%pull(viz_factors[1]), pred_grid%>%pull(viz_factors[2]), y, duplicate="mean")
 
-  #non usiamo s_norm. Just in case dovessimo ampliare funzionalità funzione.
+  #s_norm now is not used. Prepared for future developments of the function
   s_norm<-NULL
   s_norm<-list(x=(s$x-min(s$x))/(max(s$x)-min(s$x)),y=(s$y-min(s$y))/(max(s$y)-min(s$y)),
                z=(s$z-min(s$z))/(max(s$z)-min(s$z)))
@@ -104,7 +59,7 @@ ALPERC_3D_viz<-function(D_add_j, LAMBDA, model, viz_factors, fixed_factors, fixe
   df_prop_point$colore<-pal[df_prop_point$cluster]
   df_prop_point$colore<-col2hex(df_prop_point$colore)
 
-  #numero di sfumature di blu per info su rank
+  #number of shades of blue
   pal_blues<-colorRampPalette(brewer.pal(9,"Blues"))(nlevels(as.factor(proposed_points_afterclusters_Xs$rank)))
   pal_blues<-setNames(pal_blues[1:nlevels(as.factor(proposed_points_afterclusters_Xs$rank))], levels(as.factor(proposed_points_afterclusters_Xs$rank)))
   proposed_points_afterclusters_Xs$colore<-pal_blues[as.factor(proposed_points_afterclusters_Xs$rank)]

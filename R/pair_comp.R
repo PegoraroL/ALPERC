@@ -1,5 +1,5 @@
 #funzione principale. Ritorna lista con ranking parziali e globale. Regolare l'alpha.ranking per rendere più o meno sensibile il ranking finale.
-pair_comp<-function(dati,B=2000,alpha.ranking=0.05,seed=125,st="dm", paral=FALSE){
+pair_comp<-function(dati,B,alpha.ranking=0.05,seed=125,st="dm", paral=FALSE, force_n_boot){
   set.seed(seed)
   cell<-dati[,1] #colonna con i gruppi
 
@@ -16,7 +16,7 @@ pair_comp<-function(dati,B=2000,alpha.ranking=0.05,seed=125,st="dm", paral=FALSE
   nc = C*(C-1)/2 #no. comparisons
   P.dependent4dependent <- P.dependent4dependent.min <- array(dim=c((B+1),(ncol(dati)-1), nc))
   P.glob <- P.glob.min <- array(dim=c((B+1),1, nc))
-
+  N_permut_vec<-rep(NA, nc)
   #n. of dependent variables per dataset
   ndependent <- ncol(dati) - 1
 
@@ -25,11 +25,12 @@ pair_comp<-function(dati,B=2000,alpha.ranking=0.05,seed=125,st="dm", paral=FALSE
     progbar <- txtProgressBar(min = 0, max = nc, style = 3, char = "=", width=getOption("width"))
     for(nn in 1:nc){
       data.pair <- dati[(cell==unique(cell)[pair.comp[nn,1]])|(cell==unique(cell)[pair.comp[nn,2]]),]
-      res <- test.stat(y = data.pair,stat = st, alternative=1,B)
+      res <- test.stat(y = data.pair,stat = st, alternative=1,B, force_n_boot)
       P.dependent4dependent[,,nn] <- res$pv
       P.dependent4dependent.min[,,nn] <- res$pv.min
       P.glob[,1,nn] <- res$pv.comb
       P.glob.min[,1,nn] <- res$pv.comb.min
+      N_permut_vec[nn] <- unique(res$N_permut_comparisons)
       #set progress bar
       setTxtProgressBar(progbar, nn)
     }
@@ -49,7 +50,7 @@ pair_comp<-function(dati,B=2000,alpha.ranking=0.05,seed=125,st="dm", paral=FALSE
       set.seed(seed)
 
       data.pair <- dati[(cell==unique(cell)[pair.comp[nn,1]])|(cell==unique(cell)[pair.comp[nn,2]]),]
-      t_stat<-test.stat(y = data.pair,stat = st, alternative=1,B)
+      t_stat<-test.stat(y = data.pair,stat = st, alternative=1,B,force_n_boot)
       return(t_stat)
     }
     close(progbar)
@@ -59,8 +60,15 @@ pair_comp<-function(dati,B=2000,alpha.ranking=0.05,seed=125,st="dm", paral=FALSE
       P.dependent4dependent.min[,,nn] <- result[[nn]]$pv.min
       P.glob[,1,nn] <- result[[nn]]$pv.comb
       P.glob.min[,1,nn] <- result[[nn]]$pv.comb.min
+      N_permut_vec[nn] <- unique(result[[nn]]$N_permut_comparisons)
     }
   }
+#omit NAs
+  P.dependent4dependent<-na.omit(P.dependent4dependent)
+  P.dependent4dependent.min<-na.omit(P.dependent4dependent.min)
+  P.glob<-na.omit(P.glob)
+  P.glob.min<-na.omit(P.glob.min)
+  N_permut_vec<-na.omit(N_permut_vec)
 
   #Partial --> creo matrici dei p-value
   dependent4dependent <- array(dim=c(C,C,ndependent))
@@ -102,7 +110,7 @@ pair_comp<-function(dati,B=2000,alpha.ranking=0.05,seed=125,st="dm", paral=FALSE
   ranking.global <- rank_populations(global,alpha.ranking)
   names(ranking.global) <- paste(unique(cell))
 
-  return(list(parziali = ranking.dependent4dependent , globale = ranking.global))
+  return(list(parziali = ranking.dependent4dependent , globale = ranking.global, N_permut_unique=unique(N_permut_vec)))
 
 }
 

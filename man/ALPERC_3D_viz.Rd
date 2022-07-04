@@ -5,13 +5,13 @@
 ALPERC_3D_viz
 }
 \description{
-A function that provides a 3D visualization of D_add_j and LAMBDA (from an ALPERC element), together with the mean response or uncertainty as predicted by the model. It is equivalent to ALPERC_2D_viz(), but produces an interactive surface plot in 3 dimensions. It currently works only for hetGP and ranger models. For an effective visualization, the trained models (independent variables), D_add_j and LAMBDA should consider data rescaled to 0-1.
+A function that provides a 3D visualization of D_add_j and LAMBDA (from an ALPERC element), together with the mean response or uncertainty as predicted by the model. It is equivalent to ALPERC_2D_viz(), but produces an interactive surface plot in 3 dimensions. For an effective visualization, the trained models (independent variables), D_add_j and LAMBDA should consider data rescaled to 0-1.
 }
 \usage{
 ALPERC_3D_viz(
               D_add_j,
               LAMBDA,
-              model,
+              model_fnct,
               viz_factors,
               fixed_factors,
               fixed_factor_levels,
@@ -27,8 +27,8 @@ A tibble, that is an output of ALPERC() function.
   \item{LAMBDA}{
 A tibble, that is an output of ALPERC() function.
 }
-  \item{model}{
-	A hetGP or ranger (trained via caret) model.
+  \item{model_fnct}{
+		A function that returns a list of two elements, where the first element indicates the predictive mean and the second the predictive uncertainty.
 }
   \item{viz_factors}{
 A character vector that includes the names of 2 factors that will be used in the plot.
@@ -53,13 +53,11 @@ An integer, that indicates the number of points (randomly sampled) from the surf
 An interactive 3D surface plot that shows how the response (from the model) or uncertainty varies with respect to viz_factors, when the fixed_factors are constrained. In the bottom plane the candidate configurations are shown with different colors, corresponding to the different clusters. A number indicates the number of replicates (only viz_factors are considered). Red points indicate the mean uncertainty of predictions in some locations.
 }
 \references{
-Arboretti, R., Ceccato, R., Pegoraro, L., Salmaso, L. () Active learning for noisy physical experiments with multiple responses
+Arboretti, R., Ceccato, R., Pegoraro, L., Salmaso, L. (2022), Active learning for noisy physical experiments with more than two responses, Chemometrics and Intelligent Laboratory Systems, https://doi.org/10.1016/j.chemolab.2022.104595
 
 Binois, M., Gramacy, R. B., & Ludkovski, M. (2018). Practical Heteroscedastic Gaussian Process Modeling for Large Simulation Experiments, Journal of Computational and Graphical Statistics, 27(4), 808-821, https://doi.org/10.1080/10618600.2018.1458625
 
 Binois, M., & Gramacy, R. B. (2021). hetGP: Heteroskedastic Gaussian Process Modeling and Sequential Design in R. Journal of Statistical Software, 98(13), 1-44. https://doi.org/10.18637/jss.v098.i13
-
-Wright MN, Ziegler A (2017). ranger: A Fast Implementation of Random Forests for High Dimensional Data in C++ and R. Journal of Statistical Software, 77(1), 1–17. doi: 10.18637/jss
 
 Kuhn, M. (2008). Building Predictive Models in R Using the caret Package. Journal of Statistical Software, 28(5), 1 - 26. doi:http://dx.doi.org/10.18637/jss.v028.i05
 }
@@ -86,6 +84,13 @@ library(hetGP)
 
 model<-readRDS(system.file("data", "Robot_arm.rds", package="ALPERC"))
 
+##define function that returns predictive mean and uncertainty given the model
+model_fnct<-function(X){
+  pred_m<-predict(x = X, object = model)$mean
+  pred_unc<-(sqrt(predict(x = X, object = model)$nugs +
+                       predict(x = X, object = model)$sd2))
+  return(list(pred_m,pred_unc))
+}
 
 ##run the ALPERC function
 ALPERC_results<-ALPERC(n_add=5,
@@ -102,7 +107,7 @@ ALPERC_results<-ALPERC(n_add=5,
 ##obtain the interactive 3D visualization
 ALPERC_3D_viz(D_add_j=ALPERC_results$D_add_j,
               LAMBDA=ALPERC_results$LAMBDA,
-              model=model,
+              model_fnct=model_fnct,
               viz_factors=c("B", "C"),
               fixed_factors=c("A","D","E","F"),
               fixed_factor_levels=c(0.5,0.5,0.5,0.5),

@@ -20,7 +20,7 @@ silhouette_plot(ALPERC_results)
 A Silhouette plot with a vertical dashed line that indicates the best number of clusters according to the Silhouette index.
 }
 \references{
-Arboretti, R., Ceccato, R., Pegoraro, L., Salmaso, L. () Active learning for noisy physical experiments with multiple responses
+Arboretti, R., Ceccato, R., Pegoraro, L., Salmaso, L. (2022), Active learning for noisy physical experiments with more than two responses, Chemometrics and Intelligent Laboratory Systems
 
 Rousseeuw, P. J. (1987). Silhouettes: a graphical aid to the interpretation and validation of cluster analysis. Journal of computational and applied mathematics, 20, 53-65.
 }
