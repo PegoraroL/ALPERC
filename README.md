@@ -255,7 +255,7 @@ silhouette_plot(results)
 
 A function that produces a 2D visualization of D_add_j and LAMBDA,
 together with the mean response (or uncertainty) as predicted by the
-model. It currently works only for hetGP and ranger models.
+model.
 
 ### **Usage**
 
@@ -331,7 +331,7 @@ A function equivalent to ALPERC_2D_viz(), but provides a visualization
 of multiple responses in one plot. The contour plot is obtained as the
 average of the mean responses (or uncertainty) from the models. For this
 reason, raw data (responses) should be transformed to 0-1 before fitting
-the models. It currently works only for hetGP and ranger models.
+the models.
 
 ### **Usage**
 
@@ -446,8 +446,7 @@ plot2D_multiv_u<-ALPERC_2D_viz_multiv(D_add_j=results$D_add_j,
 A function that provides a 3D visualization of D_add_j and LAMBDA (from
 an ALPERC element), together with the mean response or uncertainty as
 predicted by the model. It is equivalent to ALPERC_2D_viz(), but
-produces an interactive surface plot in 3 dimensions. It currently works
-only for hetGP and ranger models.
+produces an interactive surface plot in 3 dimensions.
 
 ### **Usage**
 
@@ -525,8 +524,7 @@ of multiple responses in one plot. The surface is obtained as the
 average of the responses (or uncertainty) from the models. For this
 reason, raw data (responses) should be transformed to 0-1 before fitting
 the models. It is equivalent to ALPERC_2D_viz_multiv(), but produces an
-interactive surface plot in 3 dimensions. It currently works only for
-hetGP and ranger models.
+interactive surface plot in 3 dimensions. 
 
 ### **Usage**
 
